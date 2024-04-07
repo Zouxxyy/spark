@@ -182,6 +182,14 @@ abstract class Optimizer(catalogManager: CatalogManager)
       OptimizeOneRowRelationSubquery,
       PullOutNestedDataOuterRefExpressions,
       PullupCorrelatedPredicates) ::
+    Batch("RewriteSubquery", Once,
+      RewritePredicateSubquery,
+      PushPredicateThroughJoin,
+      LimitPushDown,
+      ColumnPruning,
+      CollapseProject,
+      RemoveRedundantAliases,
+      RemoveNoopOperators) ::
     // Subquery batch applies the optimizer rules recursively. Therefore, it makes no sense
     // to enforce idempotence on it and we change this batch from Once to FixedPoint(1).
     Batch("Subquery", FixedPoint(1),
@@ -236,14 +244,6 @@ abstract class Optimizer(catalogManager: CatalogManager)
     // The following batch should be executed after batch "Join Reorder" and "LocalRelation".
     Batch("Check Cartesian Products", Once,
       CheckCartesianProducts) :+
-    Batch("RewriteSubquery", Once,
-      RewritePredicateSubquery,
-      PushPredicateThroughJoin,
-      LimitPushDown,
-      ColumnPruning,
-      CollapseProject,
-      RemoveRedundantAliases,
-      RemoveNoopOperators) :+
     Batch("InsertMapSortInGroupingExpressions", Once,
       InsertMapSortInGroupingExpressions) :+
     // This batch must be executed after the `RewriteSubquery` batch, which creates joins.
